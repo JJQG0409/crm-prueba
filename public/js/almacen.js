@@ -53,6 +53,23 @@ export const almacen = {
     localStorage.removeItem(CLAVES.clientes);
     localStorage.removeItem(CLAVES.oportunidades);
   },
+
+  exportar(){
+    return{
+      version: 1,
+      fechaExportado: new Date().toISOString(),
+      clientes: leer(CLAVES.clientes),
+      oportunidades: leer(CLAVES.oportunidades) 
+    }
+
+  },
+
+  reemplazar({clientes, oportunidades}){
+
+    escribir(CLAVES.clientes, clientes)
+    escribir(CLAVES.oportunidades, clientes)
+  }
+
 };
 
 // Datos de ejemplo para que la aplicación no arranque vacía.
