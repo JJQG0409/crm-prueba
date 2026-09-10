@@ -46,3 +46,8 @@ public/
 6. Comparte el enlace al repositorio (público o con acceso al evaluador).
 
 No agregues dependencias ni frameworks. El objetivo es evaluar tu criterio con JavaScript, HTML y CSS.
+
+
+## Notas de la entrega
+### 1. deteccion del bug
+Al leer detenidamente me di cunta que debajo del cuadro de texto indica un maximo de 150 caracteres, mas sin embargo el maximo que aceptaba el programa era solamente 15. Al inicio no me habia percatado ya que inicialmente lei el codigo y vi que esa era la longitud que se especificaba en modelos.js por eso lo pase por alto pero al ver el programa mas detenidamente me fije del error.
