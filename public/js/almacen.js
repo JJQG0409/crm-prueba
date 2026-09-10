@@ -53,7 +53,7 @@ export const almacen = {
     localStorage.removeItem(CLAVES.clientes);
     localStorage.removeItem(CLAVES.oportunidades);
   },
-
+//funcion para exportar
   exportar(){
     return{
       version: 1,
@@ -63,12 +63,12 @@ export const almacen = {
     }
 
   },
-
+//funcion para importar
   reemplazar({clientes, oportunidades}){
 
     escribir(CLAVES.clientes, clientes)
     escribir(CLAVES.oportunidades, clientes)
-  }
+  },
 
 };
 

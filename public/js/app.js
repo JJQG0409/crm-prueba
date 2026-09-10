@@ -7,6 +7,7 @@ import {
   normalizarOportunidad,
   validarCliente,
   validarOportunidad,
+  generarId
 } from './modelos.js';
 
 const estado = {
@@ -251,7 +252,125 @@ function iniciar() {
     }
   });
 
+  //CONECTAR CON LA FUNCION PARA EXPORTAR E IMPORTAR
+  $('#exportar-datos').addEventListener('click', exportarDatos);
+  $('#importar-datos').addEventListener('click', () => $('#input-importar').click());
+  $('#input-importar').addEventListener('change', importarArchivo);
+
   renderizar();
+}
+
+function clienteImportado(bruto, indice){
+
+  const cliente = normalizarCliente({
+    id: bruto?.id || generarId(),
+    nombre: bruto?.nombre,
+    contacto: bruto?.contacto,
+    creadoEn: bruto?.creadoEn || new Date().toISOString(),
+  });
+  const errores = validarCliente(cliente).map((e)=> `Cliente #${indice + 1}: ${e}`)
+  return {cliente, errores}
+}
+
+function oportunidadImportada(bruto, indice, idsClientesValidos) {
+  const oportunidad = normalizarOportunidad({
+    id: bruto?.id || generarId(),
+    clienteId: bruto?.clienteId,
+    titulo: bruto?.titulo,
+    monto: bruto?.monto,
+    etapa: bruto?.etapa,
+    creadoEn: bruto?.creadoEn || new Date().toISOString(),
+  });
+
+  const errores = validarOportunidad(oportunidad).map((e) => `Oportunidad #${indice + 1}: ${e}`);
+
+  if (oportunidad.clienteId && !idsClientesValidos.has(oportunidad.clienteId)) {
+    errores.push(`Oportunidad #${indice + 1}: hace referencia a un cliente que no existe en el archivo.`);
+  }
+
+  return { oportunidad, errores };
+}
+
+function exportarDatos() {
+  const datos = almacen.exportar();
+  const blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const fecha = new Date().toISOString().slice(0, 10);
+
+  const enlace = document.createElement('a');
+  enlace.href = url;
+  enlace.download = `crm-datos-${fecha}.json`;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function importarArchivo(evento) {
+  const archivo = evento.target.files[0];
+  evento.target.value = '';
+  if (!archivo) return;
+
+  let contenido;
+  try {
+    contenido = JSON.parse(await archivo.text());
+  } catch {
+    alert('El archivo no es un JSON válido.');
+    return;
+  }
+
+  if (!contenido || !Array.isArray(contenido.clientes) || !Array.isArray(contenido.oportunidades)) {
+    alert('El archivo no tiene el formato esperado. Debe contener las listas "clientes" y "oportunidades".');
+    return;
+  }
+
+  const erroresGenerales = [];
+
+  const clientesValidados = [];
+  contenido.clientes.forEach((bruto, indice) => {
+    const { cliente, errores } = clienteImportado(bruto, indice);
+    if (errores.length > 0) erroresGenerales.push(...errores);
+    else clientesValidados.push(cliente);
+  });
+
+  const idsClientesValidos = new Set(clientesValidados.map((c) => c.id));
+  const oportunidadesValidadas = [];
+  contenido.oportunidades.forEach((bruto, indice) => {
+    const { oportunidad, errores } = oportunidadImportada(bruto, indice, idsClientesValidos);
+    if (errores.length > 0) erroresGenerales.push(...errores);
+    else oportunidadesValidadas.push(oportunidad);
+  });
+
+  if (clientesValidados.length === 0 && oportunidadesValidadas.length === 0) {
+    alert('No se encontró ningún cliente u oportunidad válida en el archivo. No se importó nada.');
+    return;
+  }
+
+  const clientesActuales = almacen.listarClientes().length;
+  const oportunidadesActuales = almacen.listarOportunidades().length;
+
+  let mensaje =
+    `Esto reemplazara los datos guardados en este navegador ` +
+    `(${clientesActuales} cliente(s), ${oportunidadesActuales} oportunidad(es)) ` +
+    `con ${clientesValidados.length} cliente(s) y ${oportunidadesValidadas.length} oportunidad del archivo.`;
+
+  if (erroresGenerales.length > 0) {
+    const primeros = erroresGenerales.slice(0, 5);
+    mensaje += `\n\nSe omitirán ${erroresGenerales.length} registro(s) inválido(s):\n- ${primeros.join('\n- ')}`;
+    if (erroresGenerales.length > primeros.length) {
+      mensaje += `\n… y ${erroresGenerales.length - primeros.length} más.`;
+    }
+  }
+
+  mensaje += '\n\n¿Deseas continuar? Esta acción no se puede deshacer.';
+
+  if (!confirm(mensaje)) return;
+
+  almacen.reemplazar({ clientes: clientesValidados, oportunidades: oportunidadesValidadas });
+  estado.clienteSeleccionadoId = null;
+  cancelarEdicionCliente();
+  renderizar();
+  alert('Importación completada.');
 }
 
 iniciar();
