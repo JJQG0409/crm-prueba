@@ -53,3 +53,9 @@ No agregues dependencias ni frameworks. El objetivo es evaluar tu criterio con J
 Al leer detenidamente me di cunta que debajo del cuadro de texto indica un maximo de 150 caracteres, mas sin embargo el maximo que aceptaba el programa era solamente 15. Al inicio no me habia percatado ya que inicialmente lei el codigo y vi que esa era la longitud que se especificaba en modelos.js por eso lo pase por alto pero al ver el programa mas detenidamente me fije del error.
 
 ### 2. desiciones
+Decidi reutilizar varias funciones que el programa como las validaciones, de esa forma aprovechaba los recursos para para pasar las mismas validaciones que uno formulario creado a mano.
+Una accion que descarte fue la de fusionar los datos al importar ya que me parecio que podia causar conflictos de id, por eso opte por reemplazar todos los datos y asi lo mantenia mas simple.
+tambien opte por descartar las oportunidades que tuvieran Id de clientes que no aparecieran, esto con el fin de no dejarlas sin clientes.
+
+### 3. uso de IA
+use la IA para que me explicara de mejor forma el funcionamiento del codigo, ademas de pedirle que me buscara la localizacion de ciertas clases o funciones para poder agregar el codigo. tambien le mostre mi codigo para que pudiera depurarlo en caso de tener errores que se me hubieran escapado.
