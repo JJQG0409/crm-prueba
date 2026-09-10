@@ -2,7 +2,7 @@
 // Aquí se definen las entidades y las reglas para construirlas.
 
 export const LIMITES = {
-  NOMBRE: 15,
+  NOMBRE: 150,
   CONTACTO: 100,
   TITULO: 80,
 };
